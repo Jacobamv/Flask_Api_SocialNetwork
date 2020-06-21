@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request, send_file, render_template
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity, decode_token
@@ -6,6 +6,7 @@ from flask_jwt_extended import (
 from models import *
 from peewee import *
 import os
+
 
 p =  os.path.abspath("app.py")
 i = p.index("app.py")
@@ -19,11 +20,7 @@ jwt = JWTManager(app)
 
 @app.route('/')
 def index():
-	return '''<h3> /api/signup POST {"username" : "Jacob_amv", "password" : "qwerty123", "name" : "Jacob", "email" : "jacob.akhmedov@gmail.com", "phone" : "+992928560139"} </h1>
-			  <h3> /api/signin POST {"username" : "Jacob_amv", "password" : "qwerty123"} </h1>
-			  <h3> /api/checktoken POST {"username" : "Jacob_amv", 'access_token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1OTIzNzYxMjIsIm5iZiI6MTU5MjM3NjEyMiwianRpIjoiNTA4ZTVjNGEtNDk2Ni00ZTIyLWI0MGUtZjFiYTY1YzFkOTBhIiwiZXhwIjoxNTkyMzc3MDIyLCJpZGVudGl0eSI6IkphY29iX2FtdiIsImZyZXNoIjpmYWxzZSwidHlwZSI6ImFjY2VzcyJ9.d9KhBTYitLdEoGqXypk8nvZxWXAMDqlwu3fVmsTXxks'} </h1>
-
-	 '''
+	return render_template("index.html")
 
 
 @app.route('/api/signup', methods = ['POST'])
@@ -140,7 +137,7 @@ def GetPosts():
 			"dislikes" : i.dislikes,
 			"comments" : []
 			#id ownerid published title content hasmedia media likes dislikes
-			})
+			})  
 		cm = Comments.select().where(Comments.postid == i.id)
 		for j in cm:
 			jsone["Posts"][-1]["comments"].append({
@@ -193,9 +190,9 @@ def GetFriends():
 
 	json = {"CountOfFriends" : len(friends), "friends" : []}
 	for i in friends:
-		j = Users.select().where(Users.id == i).get()
+		j = Users.select().where(Users.username == i).get()
 		json["friends"].append({
-			"id" : j.id,
+			"id" : j['id'],
 			"username" : j.username
 		})
 	return jsonify(json)
@@ -212,3 +209,7 @@ def NewRelation():
 	query.execute()
 
 	return jsonify({"msg" : "ok"})
+
+@app.route("/api/gethost", methods = ['GET'])
+def GetHost():
+	return jsonify({"host" : request.host})
