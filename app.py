@@ -213,3 +213,15 @@ def NewRelation():
 @app.route("/api/gethost", methods = ['GET'])
 def GetHost():
 	return jsonify({"host" : request.host})
+
+
+@app.route("/api/getuser", methods = ['GET'])
+def GetUser():
+	_username = request.json.get('username')
+	query = Users.select().where(Users.username == _username)
+	
+	if not query.exists():
+		return jsonify({"msg" : "DoesNotExist"})
+
+	for i in query:
+		return jsonify({"id": i.id, "username": i.username, "password" : i.password, "name" : i.name, "email" : i.email, "phone" : i.phone})
